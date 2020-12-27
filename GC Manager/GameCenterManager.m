@@ -27,9 +27,11 @@
 #endif
 }
 
+#if SUPPORT_ENCRYPTION
 @property (nonatomic, assign, readwrite) BOOL shouldCryptData;
 @property (nonatomic, strong, readwrite) NSString *cryptKey;
 @property (nonatomic, strong, readwrite) NSData *cryptKeyData;
+#endif
 @property (nonatomic, assign, readwrite) GameCenterAvailability previousGameCenterAvailability;
 
 @end
@@ -106,8 +108,9 @@
 #if !TARGET_OS_TV
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
+#if SUPPORT_ENCRYPTION
         [self setShouldCryptData:NO];
-
+#endif
         NSFileManager *fileManager = [NSFileManager defaultManager];
         if(![fileManager fileExistsAtPath:kApplicationAppSupportDirectory]) {
             NSError *error = nil;
@@ -117,14 +120,14 @@
         
         if (![fileManager fileExistsAtPath:kGameCenterManagerDataPath]) {
             NSMutableDictionary *dict = [NSMutableDictionary dictionary];
-            NSData *saveData = [NSKeyedArchiver archivedDataWithRootObject:dict];
+            NSData *saveData = [NSKeyedArchiver archivedDataWithRootObject:dict requiringSecureCoding:NO error:nil];
             [saveData writeToFile:kGameCenterManagerDataPath atomically:YES];
         }
         
         NSData *gameCenterManagerData = [NSData dataWithContentsOfFile:kGameCenterManagerDataPath];
         if (gameCenterManagerData == nil) {
             NSMutableDictionary *dict = [NSMutableDictionary dictionary];
-            NSData *saveData = [NSKeyedArchiver archivedDataWithRootObject:dict];
+            NSData *saveData = [NSKeyedArchiver archivedDataWithRootObject:dict requiringSecureCoding:NO error:nil];
             [saveData writeToFile:kGameCenterManagerDataPath atomically:YES];
         }
     });
@@ -134,6 +137,7 @@
 
 }
 
+#if SUPPORT_ENCRYPTION
 - (void)setupManagerAndSetShouldCryptWithKey:(NSString *)cryptionKey {
 #if !TARGET_OS_TV
     // This code should only be called once, to avoid unhandled exceptions when parsing the PLIST data
@@ -152,14 +156,14 @@
         
         if (![fileManager fileExistsAtPath:kGameCenterManagerDataPath]) {
             NSMutableDictionary *dict = [NSMutableDictionary dictionary];
-            NSData *saveData = [[NSKeyedArchiver archivedDataWithRootObject:dict] encryptedWithKey:self.cryptKeyData];
+            NSData *saveData = [[NSKeyedArchiver archivedDataWithRootObject:dict requiringSecureCoding:NO error:nil] encryptedWithKey:self.cryptKeyData];
             [saveData writeToFile:kGameCenterManagerDataPath atomically:YES];
         }
         
         NSData *gameCenterManagerData = [[NSData dataWithContentsOfFile:kGameCenterManagerDataPath] decryptedWithKey:self.cryptKeyData];
         if (gameCenterManagerData == nil) {
             NSMutableDictionary *dict = [NSMutableDictionary dictionary];
-            NSData *saveData = [[NSKeyedArchiver archivedDataWithRootObject:dict] encryptedWithKey:self.cryptKeyData];
+            NSData *saveData = [[NSKeyedArchiver archivedDataWithRootObject:dict requiringSecureCoding:NO error:nil] encryptedWithKey:self.cryptKeyData];
             [saveData writeToFile:kGameCenterManagerDataPath atomically:YES];
         }
     });
@@ -167,6 +171,7 @@
     // tvOS doesn't need to initialize any plist file as it must use NSUserDefaults
 #endif
 }
+#endif
 
 - (BOOL)checkGameCenterAvailability {
     // left here for backwards compatibility. Because previous versions of GameCenterManager were built with without the ignorePreviousState feature, we will preserve the old
@@ -508,7 +513,7 @@
             if (GCMLeaderboards == nil) {
                 [GKLeaderboard loadLeaderboardsWithCompletionHandler:^(NSArray *leaderboards, NSError *error) {
                     if (error == nil) {
-                        GCMLeaderboards = [[NSMutableArray alloc] initWithArray:leaderboards];
+                        self->GCMLeaderboards = [[NSMutableArray alloc] initWithArray:leaderboards];
                         [self syncGameCenter];
                     } else {
                         NSLog(@"%@",[error localizedDescription]);
@@ -533,9 +538,16 @@
                     if (error == nil) {
                         if (scores.count > 0) {
                             NSData *gameCenterManagerData;
-                            if (self.shouldCryptData == YES) gameCenterManagerData = [[NSData dataWithContentsOfFile:kGameCenterManagerDataPath] decryptedWithKey:self.cryptKeyData];
-                            else gameCenterManagerData = [NSData dataWithContentsOfFile:kGameCenterManagerDataPath];
-                            NSMutableDictionary *plistDict = [NSKeyedUnarchiver unarchiveObjectWithData:gameCenterManagerData];
+#if SUPPORT_ENCRYPTION
+                            if (self.shouldCryptData == YES) {
+                                gameCenterManagerData = [[NSData dataWithContentsOfFile:kGameCenterManagerDataPath] decryptedWithKey:self.cryptKeyData];
+                            } else {
+#endif
+                                gameCenterManagerData = [NSData dataWithContentsOfFile:kGameCenterManagerDataPath];
+#if SUPPORT_ENCRYPTION
+                            }
+#endif
+                            NSMutableDictionary *plistDict = [NSKeyedUnarchiver unarchivedObjectOfClass:[NSMutableDictionary class] fromData:gameCenterManagerData error:nil];
                             NSMutableDictionary *playerDict = [plistDict objectForKey:[self localPlayerId]];
                             
                             if (playerDict == nil) {
@@ -561,15 +573,23 @@
                             [plistDict setObject:playerDict forKey:[self localPlayerId]];
                             
                             NSData *saveData;
-                            if (self.shouldCryptData == YES) saveData = [[NSKeyedArchiver archivedDataWithRootObject:plistDict] encryptedWithKey:self.cryptKeyData];
-                            else saveData = [NSKeyedArchiver archivedDataWithRootObject:plistDict];
+#if SUPPORT_ENCRYPTION
+                            if (self.shouldCryptData == YES) {
+                                saveData = [[NSKeyedArchiver archivedDataWithRootObject:plistDict requiringSecureCoding:NO error:nil] encryptedWithKey:self.cryptKeyData];
+                            } else {
+#endif
+                                saveData = [NSKeyedArchiver archivedDataWithRootObject:plistDict requiringSecureCoding:NO error:nil];
+#if SUPPORT_ENCRYPTION
+                            }
+#endif
+                            
                             [saveData writeToFile:kGameCenterManagerDataPath atomically:YES];
                         }
                         
                         // Seeing an NSRangeException for an empty array when trying to remove the object
                         // Despite the check above in this scope that leaderboards count is > 0
-                        if (GCMLeaderboards.count > 0) {
-                            [GCMLeaderboards removeObjectAtIndex:0];
+                        if (self->GCMLeaderboards.count > 0) {
+                            [self->GCMLeaderboards removeObjectAtIndex:0];
                         }
                         
                         [self syncGameCenter];
@@ -592,9 +612,17 @@
                 if (error == nil) {
                     if (achievements.count > 0) {
                         NSData *gameCenterManagerData;
-                        if (self.shouldCryptData == YES) gameCenterManagerData = [[NSData dataWithContentsOfFile:kGameCenterManagerDataPath] decryptedWithKey:self.cryptKeyData];
-                        else gameCenterManagerData = [NSData dataWithContentsOfFile:kGameCenterManagerDataPath];
-                        NSMutableDictionary *plistDict = [NSKeyedUnarchiver unarchiveObjectWithData:gameCenterManagerData];
+#if SUPPORT_ENCRYPTION
+                        if (self.shouldCryptData == YES) {
+                            gameCenterManagerData = [[NSData dataWithContentsOfFile:kGameCenterManagerDataPath] decryptedWithKey:self.cryptKeyData];
+                        } else {
+#endif
+                            gameCenterManagerData = [NSData dataWithContentsOfFile:kGameCenterManagerDataPath];
+#if SUPPORT_ENCRYPTION
+                        }
+#endif
+                        
+                        NSMutableDictionary *plistDict = [NSKeyedUnarchiver unarchivedObjectOfClass:[NSMutableDictionary class] fromData:gameCenterManagerData error:nil];
                         NSMutableDictionary *playerDict = [plistDict objectForKey:[self localPlayerId]];
                         
                         if (playerDict == nil) {
@@ -607,8 +635,16 @@
                         
                         [plistDict setObject:playerDict forKey:[self localPlayerId]];
                         NSData *saveData;
-                        if (self.shouldCryptData == YES) saveData = [[NSKeyedArchiver archivedDataWithRootObject:plistDict] encryptedWithKey:self.cryptKeyData];
-                        else saveData = [NSKeyedArchiver archivedDataWithRootObject:plistDict];
+#if SUPPORT_ENCRYPTION
+                        if (self.shouldCryptData == YES) {
+                            saveData = [[NSKeyedArchiver archivedDataWithRootObject:plistDict requiringSecureCoding:NO error:nil] encryptedWithKey:self.cryptKeyData];
+                        } else {
+#endif
+                            saveData = [NSKeyedArchiver archivedDataWithRootObject:plistDict requiringSecureCoding:NO error:nil];
+#if SUPPORT_ENCRYPTION
+                        }
+#endif
+                        
                         [saveData writeToFile:kGameCenterManagerDataPath atomically:YES];
                     }
                     
@@ -649,9 +685,17 @@
     NSMutableArray *savedScores;
     #if !TARGET_OS_TV
     NSData *gameCenterManagerData;
-    if (self.shouldCryptData == YES) gameCenterManagerData = [[NSData dataWithContentsOfFile:kGameCenterManagerDataPath] decryptedWithKey:self.cryptKeyData];
-    else gameCenterManagerData = [NSData dataWithContentsOfFile:kGameCenterManagerDataPath];
-    NSMutableDictionary *plistDict = [NSKeyedUnarchiver unarchiveObjectWithData:gameCenterManagerData];
+#if SUPPORT_ENCRYPTION
+    if (self.shouldCryptData == YES) {
+        gameCenterManagerData = [[NSData dataWithContentsOfFile:kGameCenterManagerDataPath] decryptedWithKey:self.cryptKeyData];
+    } else {
+#endif
+        gameCenterManagerData = [NSData dataWithContentsOfFile:kGameCenterManagerDataPath];
+#if SUPPORT_ENCRYPTION
+    }
+#endif
+    
+    NSMutableDictionary *plistDict = [NSKeyedUnarchiver unarchivedObjectOfClass:[NSMutableDictionary class] fromData:gameCenterManagerData error:nil];
     savedScores = [plistDict objectForKey:@"SavedScores"];
     #else 
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
@@ -660,7 +704,7 @@
     
     if (savedScores != nil) {
         if (savedScores.count > 0) {
-            gkScore = [NSKeyedUnarchiver unarchiveObjectWithData:[savedScores objectAtIndex:0]];
+            gkScore = [NSKeyedUnarchiver unarchivedObjectOfClass:[GKScore class] fromData:[savedScores objectAtIndex:0] error:nil];
             
             
             [savedScores removeObjectAtIndex:0];
@@ -669,8 +713,16 @@
             [plistDict setObject:savedScores forKey:@"SavedScores"];
             
             NSData *saveData;
-            if (self.shouldCryptData == YES) saveData = [[NSKeyedArchiver archivedDataWithRootObject:plistDict] encryptedWithKey:self.cryptKeyData];
-            else saveData = [NSKeyedArchiver archivedDataWithRootObject:plistDict];
+#if SUPPORT_ENCRYPTION
+            if (self.shouldCryptData == YES) {
+                saveData = [[NSKeyedArchiver archivedDataWithRootObject:plistDict requiringSecureCoding:NO error:nil] encryptedWithKey:self.cryptKeyData];
+            } else {
+#endif
+                saveData = [NSKeyedArchiver archivedDataWithRootObject:plistDict requiringSecureCoding:NO error:nil];
+#if SUPPORT_ENCRYPTION
+            }
+#endif
+            
             [saveData writeToFile:kGameCenterManagerDataPath atomically:YES];
             #else
             [defaults setObject:savedScores forKey:@"SavedScores"];
@@ -696,9 +748,16 @@
             
             #if !TARGET_OS_TV
             NSData *gameCenterManagerData;
-            if (self.shouldCryptData == YES) gameCenterManagerData = [[NSData dataWithContentsOfFile:kGameCenterManagerDataPath] decryptedWithKey:self.cryptKeyData];
-            else gameCenterManagerData = [NSData dataWithContentsOfFile:kGameCenterManagerDataPath];
-            NSMutableDictionary *plistDict = [NSKeyedUnarchiver unarchiveObjectWithData:gameCenterManagerData];
+#if SUPPORT_ENCRYPTION
+            if (self.shouldCryptData == YES) {
+                gameCenterManagerData = [[NSData dataWithContentsOfFile:kGameCenterManagerDataPath] decryptedWithKey:self.cryptKeyData];
+            } else {
+#endif
+                gameCenterManagerData = [NSData dataWithContentsOfFile:kGameCenterManagerDataPath];
+#if SUPPORT_ENCRYPTION
+            }
+#endif
+            NSMutableDictionary *plistDict = [NSKeyedUnarchiver unarchivedObjectOfClass:[NSMutableDictionary class] fromData:gameCenterManagerData error:nil];
             playerDict = [plistDict objectForKey:[self localPlayerId]];
             #else
             NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
@@ -718,8 +777,15 @@
                         #if !TARGET_OS_TV
                         [plistDict setObject:playerDict forKey:[self localPlayerId]];
                         NSData *saveData;
-                        if (self.shouldCryptData == YES) saveData = [[NSKeyedArchiver archivedDataWithRootObject:plistDict] encryptedWithKey:self.cryptKeyData];
-                        else saveData = [NSKeyedArchiver archivedDataWithRootObject:plistDict];
+#if SUPPORT_ENCRYPTION
+                        if (self.shouldCryptData == YES) {
+                            saveData = [[NSKeyedArchiver archivedDataWithRootObject:plistDict requiringSecureCoding:NO error:nil] encryptedWithKey:self.cryptKeyData];
+                        } else {
+#endif
+                            saveData = [NSKeyedArchiver archivedDataWithRootObject:plistDict requiringSecureCoding:NO error:nil];
+#if SUPPORT_ENCRYPTION
+                        }
+#endif
                         [saveData writeToFile:kGameCenterManagerDataPath atomically:YES];
                         #else
                         [defaults setObject:playerDict forKey:[self localPlayerId]];
@@ -755,9 +821,17 @@
     NSMutableDictionary *playerDict;
     #if !TARGET_OS_TV
     NSData *gameCenterManagerData;
-    if (self.shouldCryptData == YES) gameCenterManagerData = [[NSData dataWithContentsOfFile:kGameCenterManagerDataPath] decryptedWithKey:self.cryptKeyData];
-    else gameCenterManagerData = [NSData dataWithContentsOfFile:kGameCenterManagerDataPath];
-    NSMutableDictionary *plistDict = [NSKeyedUnarchiver unarchiveObjectWithData:gameCenterManagerData];
+#if SUPPORT_ENCRYPTION
+    if (self.shouldCryptData == YES) {
+        gameCenterManagerData = [[NSData dataWithContentsOfFile:kGameCenterManagerDataPath] decryptedWithKey:self.cryptKeyData];
+    } else {
+#endif
+        gameCenterManagerData = [NSData dataWithContentsOfFile:kGameCenterManagerDataPath];
+#if SUPPORT_ENCRYPTION
+    }
+#endif
+    
+    NSMutableDictionary *plistDict = [NSKeyedUnarchiver unarchivedObjectOfClass:[NSMutableDictionary class] fromData:gameCenterManagerData error:nil];
     playerDict = [plistDict objectForKey:[self localPlayerId]];
     #else
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
@@ -789,8 +863,16 @@
         #if !TARGET_OS_TV
         [plistDict setObject:playerDict forKey:[self localPlayerId]];
         NSData *saveData;
-        if (self.shouldCryptData == YES) saveData = [[NSKeyedArchiver archivedDataWithRootObject:plistDict] encryptedWithKey:self.cryptKeyData];
-        else saveData = [NSKeyedArchiver archivedDataWithRootObject:plistDict];
+#if SUPPORT_ENCRYPTION
+        if (self.shouldCryptData == YES) {
+            saveData = [[NSKeyedArchiver archivedDataWithRootObject:plistDict requiringSecureCoding:NO error:nil] encryptedWithKey:self.cryptKeyData];
+        } else {
+#endif
+            saveData = [NSKeyedArchiver archivedDataWithRootObject:plistDict requiringSecureCoding:NO error:nil];
+#if SUPPORT_ENCRYPTION
+        }
+#endif
+        
         [saveData writeToFile:kGameCenterManagerDataPath atomically:YES];
         #else
         [defaults setObject:playerDict forKey:[self localPlayerId]];
@@ -849,9 +931,16 @@
     NSMutableDictionary *playerDict;
     #if !TARGET_OS_TV
     NSData *gameCenterManagerData;
-    if (self.shouldCryptData == YES) gameCenterManagerData = [[NSData dataWithContentsOfFile:kGameCenterManagerDataPath] decryptedWithKey:self.cryptKeyData];
-    else gameCenterManagerData = [NSData dataWithContentsOfFile:kGameCenterManagerDataPath];
-    NSMutableDictionary *plistDict = [NSKeyedUnarchiver unarchiveObjectWithData:gameCenterManagerData];
+#if SUPPORT_ENCRYPTION
+    if (self.shouldCryptData == YES) {
+        gameCenterManagerData = [[NSData dataWithContentsOfFile:kGameCenterManagerDataPath] decryptedWithKey:self.cryptKeyData];
+    } else {
+#endif
+        gameCenterManagerData = [NSData dataWithContentsOfFile:kGameCenterManagerDataPath];
+#if SUPPORT_ENCRYPTION
+    }
+#endif
+    NSMutableDictionary *plistDict = [NSKeyedUnarchiver unarchivedObjectOfClass:[NSMutableDictionary class] fromData:gameCenterManagerData error:nil];
     playerDict = [plistDict objectForKey:[self localPlayerId]];
     #else
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
@@ -871,8 +960,15 @@
         #if !TARGET_OS_TV
         [plistDict setObject:playerDict forKey:[self localPlayerId]];
         NSData *saveData;
-        if (self.shouldCryptData == YES) saveData = [[NSKeyedArchiver archivedDataWithRootObject:plistDict] encryptedWithKey:self.cryptKeyData];
-        else saveData = [NSKeyedArchiver archivedDataWithRootObject:plistDict];
+#if SUPPORT_ENCRYPTION
+        if (self.shouldCryptData == YES) {
+            saveData = [[NSKeyedArchiver archivedDataWithRootObject:plistDict requiringSecureCoding:NO error:nil] encryptedWithKey:self.cryptKeyData];
+        } else {
+#endif
+            saveData = [NSKeyedArchiver archivedDataWithRootObject:plistDict requiringSecureCoding:NO error:nil];
+#if SUPPORT_ENCRYPTION
+        }
+#endif
         [saveData writeToFile:kGameCenterManagerDataPath atomically:YES];
         #else
         [defaults setObject:playerDict forKey:[self localPlayerId]];
@@ -919,14 +1015,21 @@
     if(score.value == 0) {
         return;
     }
-    NSData *scoreData = [NSKeyedArchiver archivedDataWithRootObject:score];
+    NSData *scoreData = [NSKeyedArchiver archivedDataWithRootObject:score requiringSecureCoding:NO error:nil];
     NSMutableArray *savedScores;
     #if !TARGET_OS_TV
     NSData *gameCenterManagerData;
-    if (self.shouldCryptData == YES) gameCenterManagerData = [[NSData dataWithContentsOfFile:kGameCenterManagerDataPath] decryptedWithKey:self.cryptKeyData];
-    else gameCenterManagerData = [NSData dataWithContentsOfFile:kGameCenterManagerDataPath];
+#if SUPPORT_ENCRYPTION
+    if (self.shouldCryptData == YES) {
+        gameCenterManagerData = [[NSData dataWithContentsOfFile:kGameCenterManagerDataPath] decryptedWithKey:self.cryptKeyData];
+    } else {
+#endif
+        gameCenterManagerData = [NSData dataWithContentsOfFile:kGameCenterManagerDataPath];
+#if SUPPORT_ENCRYPTION
+    }
+#endif
     
-    NSMutableDictionary *plistDict = [NSKeyedUnarchiver unarchiveObjectWithData:gameCenterManagerData];
+    NSMutableDictionary *plistDict = [NSKeyedUnarchiver unarchivedObjectOfClass:[NSMutableDictionary class] fromData:gameCenterManagerData error:nil];
     savedScores = [plistDict objectForKey:@"SavedScores"];
     #else
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
@@ -942,8 +1045,16 @@
     #if !TARGET_OS_TV
     [plistDict setObject:savedScores forKey:@"SavedScores"];
     NSData *saveData;
-    if (self.shouldCryptData == YES) saveData = [[NSKeyedArchiver archivedDataWithRootObject:plistDict] encryptedWithKey:self.cryptKeyData];
-    else saveData = [NSKeyedArchiver archivedDataWithRootObject:plistDict];
+#if SUPPORT_ENCRYPTION
+    if (self.shouldCryptData == YES) {
+        saveData = [[NSKeyedArchiver archivedDataWithRootObject:plistDict requiringSecureCoding:NO error:nil] encryptedWithKey:self.cryptKeyData];
+    } else {
+#endif
+        saveData = [NSKeyedArchiver archivedDataWithRootObject:plistDict requiringSecureCoding:NO error:nil];
+#if SUPPORT_ENCRYPTION
+    }
+#endif
+    
     [saveData writeToFile:kGameCenterManagerDataPath atomically:YES];
     #else
     [defaults setObject:savedScores forKey:@"SavedScores"];
@@ -966,9 +1077,17 @@
     NSMutableDictionary *playerDict;
     #if !TARGET_OS_TV
     NSData *gameCenterManagerData;
-    if (self.shouldCryptData == YES) gameCenterManagerData = [[NSData dataWithContentsOfFile:kGameCenterManagerDataPath] decryptedWithKey:self.cryptKeyData];
-    else gameCenterManagerData = [NSData dataWithContentsOfFile:kGameCenterManagerDataPath];
-    NSMutableDictionary *plistDict = [NSKeyedUnarchiver unarchiveObjectWithData:gameCenterManagerData];
+#if SUPPORT_ENCRYPTION
+    if (self.shouldCryptData == YES) {
+        gameCenterManagerData = [[NSData dataWithContentsOfFile:kGameCenterManagerDataPath] decryptedWithKey:self.cryptKeyData];
+    } else {
+#endif
+        gameCenterManagerData = [NSData dataWithContentsOfFile:kGameCenterManagerDataPath];
+#if SUPPORT_ENCRYPTION
+    }
+#endif
+    
+    NSMutableDictionary *plistDict = [NSKeyedUnarchiver unarchivedObjectOfClass:[NSMutableDictionary class] fromData:gameCenterManagerData error:nil];
     playerDict = [plistDict objectForKey:[self localPlayerId]];
     #else
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
@@ -1002,8 +1121,16 @@
     #if !TARGET_OS_TV
     [plistDict setObject:playerDict forKey:[self localPlayerId]];
     NSData *saveData;
-    if (self.shouldCryptData == YES) saveData = [[NSKeyedArchiver archivedDataWithRootObject:plistDict] encryptedWithKey:self.cryptKeyData];
-    else saveData = [NSKeyedArchiver archivedDataWithRootObject:plistDict];
+#if SUPPORT_ENCRYPTION
+    if (self.shouldCryptData == YES) {
+        saveData = [[NSKeyedArchiver archivedDataWithRootObject:plistDict requiringSecureCoding:NO error:nil] encryptedWithKey:self.cryptKeyData];
+    } else {
+#endif
+        saveData = [NSKeyedArchiver archivedDataWithRootObject:plistDict requiringSecureCoding:NO error:nil];
+#if SUPPORT_ENCRYPTION
+    }
+#endif
+    
     [saveData writeToFile:kGameCenterManagerDataPath atomically:YES];
     #else
     [defaults setObject:playerDict forKey:[self localPlayerId]];
@@ -1044,9 +1171,16 @@
     NSMutableDictionary *playerDict;
     #if !TARGET_OS_TV
     NSData *gameCenterManagerData;
-    if (self.shouldCryptData == YES) gameCenterManagerData = [[NSData dataWithContentsOfFile:kGameCenterManagerDataPath] decryptedWithKey:self.cryptKeyData];
-    else gameCenterManagerData = [NSData dataWithContentsOfFile:kGameCenterManagerDataPath];
-    NSMutableDictionary *plistDict = [NSKeyedUnarchiver unarchiveObjectWithData:gameCenterManagerData];
+#if SUPPORT_ENCRYPTION
+    if (self.shouldCryptData == YES) {
+        gameCenterManagerData = [[NSData dataWithContentsOfFile:kGameCenterManagerDataPath] decryptedWithKey:self.cryptKeyData];
+    } else {
+#endif
+        gameCenterManagerData = [NSData dataWithContentsOfFile:kGameCenterManagerDataPath];
+#if SUPPORT_ENCRYPTION
+    }
+#endif
+    NSMutableDictionary *plistDict = [NSKeyedUnarchiver unarchivedObjectOfClass:[NSMutableDictionary class] fromData:gameCenterManagerData error:nil];
     playerDict = [plistDict objectForKey:[self localPlayerId]];
     #else
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
@@ -1069,9 +1203,16 @@
     NSMutableDictionary *playerDict;
     #if !TARGET_OS_TV
     NSData *gameCenterManagerData;
-    if (self.shouldCryptData == YES) gameCenterManagerData = [[NSData dataWithContentsOfFile:kGameCenterManagerDataPath] decryptedWithKey:self.cryptKeyData];
-    else gameCenterManagerData = [NSData dataWithContentsOfFile:kGameCenterManagerDataPath];
-    NSMutableDictionary *plistDict = [NSKeyedUnarchiver unarchiveObjectWithData:gameCenterManagerData];
+#if SUPPORT_ENCRYPTION
+    if (self.shouldCryptData == YES) {
+        gameCenterManagerData = [[NSData dataWithContentsOfFile:kGameCenterManagerDataPath] decryptedWithKey:self.cryptKeyData];
+    } else {
+#endif
+        gameCenterManagerData = [NSData dataWithContentsOfFile:kGameCenterManagerDataPath];
+#if SUPPORT_ENCRYPTION
+    }
+#endif
+    NSMutableDictionary *plistDict = [NSKeyedUnarchiver unarchivedObjectOfClass:[NSMutableDictionary class] fromData:gameCenterManagerData error:nil];
     playerDict = [plistDict objectForKey:[self localPlayerId]];
     #else
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
@@ -1103,9 +1244,16 @@
     NSMutableDictionary *playerDict;
     #if !TARGET_OS_TV
     NSData *gameCenterManagerData;
-    if (self.shouldCryptData == YES) gameCenterManagerData = [[NSData dataWithContentsOfFile:kGameCenterManagerDataPath] decryptedWithKey:self.cryptKeyData];
-    else gameCenterManagerData = [NSData dataWithContentsOfFile:kGameCenterManagerDataPath];
-    NSMutableDictionary *plistDict = [NSKeyedUnarchiver unarchiveObjectWithData:gameCenterManagerData];
+#if SUPPORT_ENCRYPTION
+    if (self.shouldCryptData == YES) {
+        gameCenterManagerData = [[NSData dataWithContentsOfFile:kGameCenterManagerDataPath] decryptedWithKey:self.cryptKeyData];
+    } else {
+#endif
+        gameCenterManagerData = [NSData dataWithContentsOfFile:kGameCenterManagerDataPath];
+#if SUPPORT_ENCRYPTION
+    }
+#endif
+    NSMutableDictionary *plistDict = [NSKeyedUnarchiver unarchivedObjectOfClass:[NSMutableDictionary class] fromData:gameCenterManagerData error:nil];
     playerDict = [plistDict objectForKey:[self localPlayerId]];
     #else
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
@@ -1126,9 +1274,16 @@
     NSMutableDictionary *playerDict;
     #if !TARGET_OS_TV
     NSData *gameCenterManagerData;
-    if (self.shouldCryptData == YES) gameCenterManagerData = [[NSData dataWithContentsOfFile:kGameCenterManagerDataPath] decryptedWithKey:self.cryptKeyData];
-    else gameCenterManagerData = [NSData dataWithContentsOfFile:kGameCenterManagerDataPath];
-    NSMutableDictionary *plistDict = [NSKeyedUnarchiver unarchiveObjectWithData:gameCenterManagerData];
+#if SUPPORT_ENCRYPTION
+    if (self.shouldCryptData == YES) {
+        gameCenterManagerData = [[NSData dataWithContentsOfFile:kGameCenterManagerDataPath] decryptedWithKey:self.cryptKeyData];
+    } else {
+#endif
+        gameCenterManagerData = [NSData dataWithContentsOfFile:kGameCenterManagerDataPath];
+#if SUPPORT_ENCRYPTION
+    }
+#endif
+    NSMutableDictionary *plistDict = [NSKeyedUnarchiver unarchivedObjectOfClass:[NSMutableDictionary class] fromData:gameCenterManagerData error:nil];
     playerDict = [plistDict objectForKey:[self localPlayerId]];
     #else
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
@@ -1285,9 +1440,16 @@
                 
                 #if !TARGET_OS_TV
                 NSData *gameCenterManagerData;
-                if (self.shouldCryptData == YES) gameCenterManagerData = [[NSData dataWithContentsOfFile:kGameCenterManagerDataPath] decryptedWithKey:self.cryptKeyData];
-                else gameCenterManagerData = [NSData dataWithContentsOfFile:kGameCenterManagerDataPath];
-                NSMutableDictionary *plistDict = [NSKeyedUnarchiver unarchiveObjectWithData:gameCenterManagerData];
+#if SUPPORT_ENCRYPTION
+                if (self.shouldCryptData == YES) {
+                    gameCenterManagerData = [[NSData dataWithContentsOfFile:kGameCenterManagerDataPath] decryptedWithKey:self.cryptKeyData];
+                } else {
+#endif
+                    gameCenterManagerData = [NSData dataWithContentsOfFile:kGameCenterManagerDataPath];
+#if SUPPORT_ENCRYPTION
+                }
+#endif
+                NSMutableDictionary *plistDict = [NSKeyedUnarchiver unarchivedObjectOfClass:[NSMutableDictionary class] fromData:gameCenterManagerData error:nil];
                 playerDict = [plistDict objectForKey:[self localPlayerId]];
                 #else
                 NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
@@ -1305,8 +1467,15 @@
                 #if !TARGET_OS_TV
                 [plistDict setObject:playerDict forKey:[self localPlayerId]];
                 NSData *saveData;
-                if (self.shouldCryptData == YES) saveData = [[NSKeyedArchiver archivedDataWithRootObject:plistDict] encryptedWithKey:self.cryptKeyData];
-                else saveData = [NSKeyedArchiver archivedDataWithRootObject:plistDict];
+#if SUPPORT_ENCRYPTION
+                if (self.shouldCryptData == YES) {
+                    saveData = [[NSKeyedArchiver archivedDataWithRootObject:plistDict requiringSecureCoding:NO error:nil] encryptedWithKey:self.cryptKeyData];
+                } else {
+#endif
+                    saveData = [NSKeyedArchiver archivedDataWithRootObject:plistDict requiringSecureCoding:NO error:nil];
+#if SUPPORT_ENCRYPTION
+                }
+#endif
                 [saveData writeToFile:kGameCenterManagerDataPath atomically:YES];
                 #else
                 [defaults setObject:playerDict forKey:[self localPlayerId]];

@@ -63,7 +63,11 @@
     GKMatchmakerViewController *matchViewController = [[GKMatchmakerViewController alloc] initWithMatchRequest:request];
     matchViewController.matchmakerDelegate = self;
     
+#if TARGET_OS_OSX
+    [self.matchPresentingController presentViewControllerAsModalWindow:matchViewController];
+#else
     [self.matchPresentingController presentViewController:matchViewController animated:YES completion:nil];
+#endif
 }
 
 - (void)findMatchWithGKMatchRequest:(GKMatchRequest *)matchRequest onViewController:(UIViewController *)viewController {
@@ -82,7 +86,11 @@
     GKMatchmakerViewController *matchViewController = [[GKMatchmakerViewController alloc] initWithMatchRequest:matchRequest];
     matchViewController.matchmakerDelegate = self;
     
+#if TARGET_OS_OSX
+    [self.matchPresentingController presentViewControllerAsModalWindow:matchViewController];
+#else
     [self.matchPresentingController presentViewController:matchViewController animated:YES completion:nil];
+#endif
 }
 
 - (BOOL)sendAllPlayersMatchData:(NSData *)data shouldSendQuickly:(BOOL)sendQuickly completion:(void (^)(BOOL success, NSError *error))handler {
@@ -184,8 +192,50 @@
         }
     }
 #else
-    #warning GCMMultiplayer::sendMatchData not implemented
-    return NO;
+    // Check if data should be sent reliably or unreliably
+    // Reliable: ensures that the data is sent and arrives, can take a long time. Best used for critical game updates.
+    // Unreliable: data is sent quickly, data can be lost or fragmented. Best used for frequent game updates.
+    NSError *error;
+    if (sendQuickly == YES) {
+        // The data should be sent unreliably
+        if (data.length > 1000) {
+            // Limit the size of unreliable messages to 1000 bytes or smaller - as per Apple documentation guidelines
+            if (handler != nil) handler(NO, [NSError errorWithDomain:@"The specified data exceeded the unreliable sending limit of 1000 bytes. Either send the data reliably (max. 87 kB) or decrease data packet size." code:GCMErrorMultiplayerDataPacketTooLarge userInfo:@{@"data": data, @"method": @"unreliable", @"players": players}]);
+            return NO;
+        }
+        
+        // Send the data unreliably to the specified players
+        BOOL success = [self.multiplayerMatch sendData:data toPlayers:players dataMode:GKMatchSendDataUnreliable error:&error];
+        if (!success) {
+            // There was an error while sending the data
+            if (handler != nil) handler(NO, error);
+            return NO;
+        } else {
+            // There was no error while sending the data
+            // No gauruntee is made as to whether or not it is recieved.
+            if (handler != nil) handler(YES, nil);
+            return YES;
+        }
+    } else {
+        // Limit the size of reliable messages to 87 kilobytes (89,088 bytes) or smaller - as per Apple documentation guidelines
+        if (data.length > 89088) {
+            if (handler != nil) handler(NO, [NSError errorWithDomain:@"The specified data exceeded the reliable sending limit of 87 kilobytes. You must decrease the data packet size." code:GCMErrorMultiplayerDataPacketTooLarge userInfo:@{@"data": data, @"method": @"reliable", @"players": players}]);
+            return NO;
+        }
+        
+        // Send the data reliably to the specified players
+        BOOL success = [self.multiplayerMatch sendData:data toPlayers:players dataMode:GKMatchSendDataReliable error:&error];
+        if (!success) {
+            // There was an error while sending the data
+            if (handler != nil) handler(NO, error);
+            return NO;
+        } else {
+            // There was no error while sending the data
+            // No gauruntee is made as to when it will be recieved.
+            if (handler != nil) handler(YES, nil);
+            return YES;
+        }
+    }
 #endif
 }
 
@@ -212,27 +262,41 @@
         [self.multiplayerDelegate gameCenterManager:self match:self.multiplayerMatch didAcceptMatchInvitation:invite player:player];
 }
 
+#if !TARGET_OS_OSX
 - (void)player:(GKPlayer *)player didRequestMatchWithPlayers:(NSArray *)playerIDsToInvite {
     if ([self.multiplayerDelegate respondsToSelector:@selector(gameCenterManager:match:didRecieveMatchInvitationForPlayer:playersToInvite:)])
         [self.multiplayerDelegate gameCenterManager:self match:self.multiplayerMatch didRecieveMatchInvitationForPlayer:player playersToInvite:playerIDsToInvite];
 }
+#endif
 
 #pragma mark - GKMatchmakerViewControllerDelegate
 
 - (void)matchmakerViewControllerWasCancelled:(GKMatchmakerViewController *)viewController {
     // Matchmaking was cancelled by the user
+#if TARGET_OS_OSX
+    [self.matchPresentingController dismissViewController:viewController];
+#else
     [self.matchPresentingController dismissViewControllerAnimated:YES completion:nil];
+#endif
 }
 
 - (void)matchmakerViewController:(GKMatchmakerViewController *)viewController didFailWithError:(NSError *)error {
     // Matchmaking failed due to an error
+#if TARGET_OS_OSX
+    [self.matchPresentingController dismissViewController:viewController];
+#else
     [self.matchPresentingController dismissViewControllerAnimated:YES completion:nil];
+#endif
     NSLog(@"Error finding match: %@", error);
 }
 
 - (void)matchmakerViewController:(GKMatchmakerViewController *)viewController didFindMatch:(GKMatch *)theMatch {
     // A peer-to-peer match has been found, the game should start
+#if TARGET_OS_OSX
+    [self.matchPresentingController dismissViewController:viewController];
+#else
     [self.matchPresentingController dismissViewControllerAnimated:YES completion:nil];
+#endif
     self.multiplayerMatch = theMatch;
     self.multiplayerMatch.delegate = self;
     
@@ -249,6 +313,7 @@
 
 #pragma mark - GKMatchDelegate
 
+#if !TARGET_OS_OSX
 - (void)match:(GKMatch *)theMatch didReceiveData:(NSData *)data fromPlayer:(NSString *)playerID {
     // The match received data sent from the player
     
@@ -305,6 +370,7 @@
     }
     
 }
+#endif
 
 - (void)match:(GKMatch *)theMatch connectionWithPlayerFailed:(NSString *)playerID withError:(NSError *)error {
     // The match was unable to connect with the player due to an error

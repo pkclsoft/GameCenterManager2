@@ -74,10 +74,12 @@
     @discussion Initializes GameCenterManager. Should be called at app launch. */
 - (void)initGameCenter __deprecated;
 
+#if SUPPORT_ENCRYPTION
 /** Initializes GameCenterManager. Should be called at app launch. Locally saved scores and achievements will be encrypted with the specified keyword when saved.
  
  @discussion This is more secure, but it may be slower. When submitting an app to the AppStore with GCManager Encryption, you may need to register for US Export Compliance. */
 - (void)setupManagerAndSetShouldCryptWithKey:(NSString *)cryptKey;
+#endif
 
 /** Initializes GameCenterManager. Should be called at app launch. Locally saved scores and achievements will not be encrypted when saved.
  
@@ -189,12 +191,13 @@
 /// Use this property to check if Game Center is available and supported on the current device.
 @property (nonatomic, assign) BOOL isGameCenterAvailable;
 
+#if SUPPORT_ENCRYPTION
 /// @b Readonly. Indicates whether or not locally saved scores and achievements should be encrypted. To turn ON this feature, initialize GameCenterManager using the \p setupManagerAndSetShouldCryptWithKey: method (instead of just \p setupManager)
 @property (nonatomic, assign, readonly) BOOL shouldCryptData;
 
 /// @b Readonly. The key used to encrypt and decrypt locally saved scores and achievements. To set the key, setup GameCenterManager using the \p setupManagerAndSetShouldCryptWithKey: method
 @property (nonatomic, strong, readonly) NSString *cryptKey;
-
+#endif
 
 @end
 

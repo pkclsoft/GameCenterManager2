@@ -105,7 +105,7 @@
 - (void)gameCenterManager:(GCMMultiplayer *)manager match:(GKMatch *)match didConnectAllPlayers:(NSArray *)gkPlayerArray;
 
 /// Sent to the delegate when a player is disconnected. Passes the disconnected player to the delegate.
-- (void)gameCenterManager:(GCMMultiplayer *)manager match:(GKMatch *)match playerDidDisconnect:(GKPlayer *)player __OSX_AVAILABLE_STARTING(__OSX_10_9,__IPHONE_7_0);
+- (void)gameCenterManager:(GCMMultiplayer *)manager match:(GKMatch *)match playerDidDisconnect:(GKPlayer *)player;
 
 /// Sent to the delegate when a player recieves a match invitation. Use this opportunity to begin a match or setup the match request.
 - (void)gameCenterManager:(GCMMultiplayer *)manager match:(GKMatch *)match didRecieveMatchInvitationForPlayer:(GKPlayer *)invitedPlayer playersToInvite:(NSArray *)players;
