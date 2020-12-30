@@ -64,7 +64,7 @@
     matchViewController.matchmakerDelegate = self;
     
 #if TARGET_OS_OSX
-    [self.matchPresentingController presentViewControllerAsModalWindow:matchViewController];
+    [self.matchPresentingController presentViewControllerAsSheet:matchViewController];
 #else
     [self.matchPresentingController presentViewController:matchViewController animated:YES completion:nil];
 #endif
@@ -87,7 +87,7 @@
     matchViewController.matchmakerDelegate = self;
     
 #if TARGET_OS_OSX
-    [self.matchPresentingController presentViewControllerAsModalWindow:matchViewController];
+    [self.matchPresentingController presentViewControllerAsSheet:matchViewController];
 #else
     [self.matchPresentingController presentViewController:matchViewController animated:YES completion:nil];
 #endif
@@ -160,7 +160,7 @@
         }
         
         // Send the data unreliably to the specified players
-        BOOL success = [self.multiplayerMatch sendData:data toPlayers:players withDataMode:GKMatchSendDataUnreliable error:&error];
+        BOOL success = [self.multiplayerMatch sendData:data toPlayers:players dataMode:GKMatchSendDataUnreliable error:&error];
         if (!success) {
             // There was an error while sending the data
             if (handler != nil) handler(NO, error);
@@ -179,7 +179,7 @@
         }
         
         // Send the data reliably to the specified players
-        BOOL success = [self.multiplayerMatch sendData:data toPlayers:players withDataMode:GKMatchSendDataReliable error:&error];
+        BOOL success = [self.multiplayerMatch sendData:data toPlayers:players dataMode:GKMatchSendDataReliable error:&error];
         if (!success) {
             // There was an error while sending the data
             if (handler != nil) handler(NO, error);
@@ -262,12 +262,10 @@
         [self.multiplayerDelegate gameCenterManager:self match:self.multiplayerMatch didAcceptMatchInvitation:invite player:player];
 }
 
-#if !TARGET_OS_OSX
-- (void)player:(GKPlayer *)player didRequestMatchWithPlayers:(NSArray *)playerIDsToInvite {
+- (void) player:(GKPlayer *)player didRequestMatchWithRecipients:(NSArray<GKPlayer *> *)recipientPlayers {
     if ([self.multiplayerDelegate respondsToSelector:@selector(gameCenterManager:match:didRecieveMatchInvitationForPlayer:playersToInvite:)])
-        [self.multiplayerDelegate gameCenterManager:self match:self.multiplayerMatch didRecieveMatchInvitationForPlayer:player playersToInvite:playerIDsToInvite];
+        [self.multiplayerDelegate gameCenterManager:self match:self.multiplayerMatch didRecieveMatchInvitationForPlayer:player playersToInvite:recipientPlayers];
 }
-#endif
 
 #pragma mark - GKMatchmakerViewControllerDelegate
 
@@ -313,37 +311,40 @@
 
 #pragma mark - GKMatchDelegate
 
-#if !TARGET_OS_OSX
-- (void)match:(GKMatch *)theMatch didReceiveData:(NSData *)data fromPlayer:(NSString *)playerID {
+- (void)match:(GKMatch *)theMatch didReceiveData:(NSData *)data fromRemotePlayer:(GKPlayer *)player {
     // The match received data sent from the player
     
     if (self.multiplayerMatch != theMatch) return;
     
-    [self.multiplayerDelegate gameCenterManager:self match:theMatch didReceiveData:data fromPlayer:playerID];
+    [self.multiplayerDelegate gameCenterManager:self match:theMatch didReceiveData:data fromPlayer:player];
 }
 
-- (void)match:(GKMatch *)theMatch player:(NSString *)playerID didChangeState:(GKPlayerConnectionState)state {
+- (void)match:(GKMatch *)match player:(GKPlayer *)player didChangeConnectionState:(GKPlayerConnectionState)state {
     // The player state changed (eg. connected or disconnected)
     
-    if (self.multiplayerMatch != theMatch) return;
+    if (self.multiplayerMatch != match) return;
     
     switch (state) {
         case GKPlayerStateConnected:
             // Handle a new player connection
             NSLog(@"Player connected!");
             
-            if (!self.multiplayerMatchStarted && theMatch.expectedPlayerCount == 0) {
+            if (!self.multiplayerMatchStarted && match.expectedPlayerCount == 0) {
                 NSLog(@"Ready to start match!");
                 
                 // TODO: Match was found and all players are connected
                 NSLog(@"The didChangeState: connection is being called. You need to determine if this should be handled. For now it will not be handled.");
                 
                 if ([self.multiplayerDelegate respondsToSelector:@selector(gameCenterManager:match:didConnectAllPlayers:)]) {
-                    #if TARGET_OS_IOS || (TARGET_OS_IPHONE && !TARGET_OS_TV)
-                    [GKPlayer loadPlayersForIdentifiers:theMatch.playerIDs withCompletionHandler:^(NSArray *players, NSError *error) {
-                        [self.multiplayerDelegate gameCenterManager:self match:theMatch didConnectAllPlayers:players];
+                    NSMutableArray<NSString*> *playerIDs = [NSMutableArray arrayWithCapacity:match.players.count];
+                    
+                    [match.players enumerateObjectsUsingBlock:^(GKPlayer * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+                        [playerIDs addObject:obj.playerID];
                     }];
-                    #endif
+                    
+                    [GKPlayer loadPlayersForIdentifiers:playerIDs withCompletionHandler:^(NSArray<GKPlayer*> *players, NSError *error) {
+                        [self.multiplayerDelegate gameCenterManager:self match:match didConnectAllPlayers:players];
+                    }];
                 }
             }
             
@@ -353,13 +354,13 @@
             NSLog(@"Player disconnected");
             
             if ([self.multiplayerDelegate respondsToSelector:@selector(gameCenterManager:match:playerDidDisconnect:)]) {
-                [GKPlayer loadPlayersForIdentifiers:@[playerID] withCompletionHandler:^(NSArray *players, NSError *error) {
-                    [self.multiplayerDelegate gameCenterManager:self match:theMatch playerDidDisconnect:[players firstObject]];
+                [GKPlayer loadPlayersForIdentifiers:@[player.playerID] withCompletionHandler:^(NSArray *players, NSError *error) {
+                    [self.multiplayerDelegate gameCenterManager:self match:match playerDidDisconnect:[players firstObject]];
                 }];
             }
             
             self.multiplayerMatchStarted = NO;
-            [self.multiplayerDelegate gameCenterManager:self matchEnded:theMatch];
+            [self.multiplayerDelegate gameCenterManager:self matchEnded:match];
             
             break;
             
@@ -370,7 +371,6 @@
     }
     
 }
-#endif
 
 - (void)match:(GKMatch *)theMatch connectionWithPlayerFailed:(NSString *)playerID withError:(NSError *)error {
     // The match was unable to connect with the player due to an error

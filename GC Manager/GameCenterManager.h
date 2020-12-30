@@ -20,6 +20,18 @@
     #endif
 #endif
 
+// If you want to support encryption, uncomment the following line
+//#define SUPPORT_ENCRYPTION (1)
+
+// If you want your user defaults to be preserved in iCloud uncomment the following line
+#define USE_ICLOUD_USER_DEFAULTS (1)
+
+#if USE_ICLOUD_USER_DEFAULTS
+#define USERDEFAULTS SDCloudUserDefaults
+#else
+#define USERDEFAULTS [NSUserDefaults standardUserDefaults]
+#endif
+
 #if TARGET_OS_IOS || (TARGET_OS_IPHONE && !TARGET_OS_TV)
     #define kApplicationAppSupportDirectory [NSHomeDirectory() stringByAppendingPathComponent:@"Library"]
     #define kGameCenterManagerDataFile @"GameCenterManager.plist"
@@ -68,11 +80,6 @@
 /// The multiplayer object used to facilitate and create peer-to-peer multiplayer sessions
 @property (nonatomic, strong) GCMMultiplayer *multiplayerObject;
 #endif
-
-
-/** DEPRECTAED. Use \p setupManagerAndSetShouldCryptWithKey: instead.
-    @discussion Initializes GameCenterManager. Should be called at app launch. */
-- (void)initGameCenter __deprecated;
 
 #if SUPPORT_ENCRYPTION
 /** Initializes GameCenterManager. Should be called at app launch. Locally saved scores and achievements will be encrypted with the specified keyword when saved.
@@ -134,19 +141,16 @@
 - (void)getChallengesWithCompletion:(void (^)(NSArray *challenges, NSError *error))handler __attribute__((nonnull));
 
 
-#if TARGET_OS_IPHONE
+//#if TARGET_OS_IPHONE
 /// Presents the GameCenter Achievements ViewController over the specified ViewController. Dismissal and delegation is handled by GameCenterManager.
 - (void)presentAchievementsOnViewController:(UIViewController *)viewController;
-
-/// DEPRECATED. Use presentLeaderboardsOnViewController: withLeaderboard: instead.
-- (void)presentLeaderboardsOnViewController:(UIViewController *)viewController __deprecated;
 
 /// Presents the GameCenter Leaderboards ViewController with Leaderboard Identifier over the specified ViewController. Dismissal and delegation is handled by GameCenterManager.
 - (void)presentLeaderboardsOnViewController:(UIViewController *)viewController withLeaderboard:(NSString *)leaderboard;
 
 /// Presents the GameCenter Challenges ViewController over the specified ViewController. Dismissal and delegation is handled by GameCenterManager.
 - (void)presentChallengesOnViewController:(UIViewController *)viewController;
-#endif
+//#endif
 
 
 #if TARGET_OS_IPHONE
@@ -162,7 +166,7 @@
 
 
 /// Returns currently authenticated local player ID. If no player is authenticated, "unknownPlayer" is returned.
-- (NSString *)localPlayerId;
+- (NSString *)localPlayerID;
 
 /// Returns currently authenticated local player's display name (alias or actual name depending on friendship). If no player is authenticated, "unknownPlayer" is returned. Player Alias will be returned if the Display Name property is not available
 - (NSString *)localPlayerDisplayName;
@@ -182,11 +186,8 @@
 /// Returns YES if an active internet connection is available.
 - (BOOL)isInternetAvailable;
 
-/// DEPRECATED. Use checkGameCenterAvailability: ignorePreviousStatus: instead.
-- (BOOL)checkGameCenterAvailability __deprecated;
-
 /// Check if Game Center is supported
-- (BOOL)checkGameCenterAvailability:(BOOL)ignorePreviousStatus;
+- (BOOL)checkGameCenterAvailability;
 
 /// Use this property to check if Game Center is available and supported on the current device.
 @property (nonatomic, assign) BOOL isGameCenterAvailable;
@@ -243,20 +244,20 @@
 //-- Deprecated Delegate Methods ---//
 //----------------------------------//
 
-/// DEPRECATED. Use gameCenterManager: didSaveScore: instead.
-- (void)gameCenterManager:(GameCenterManager *)manager savedScore:(GKScore *)score __deprecated;
-
-/// DEPRECATED. Use gameCenterManager: didSaveAchievement: instead.
-- (void)gameCenterManager:(GameCenterManager *)manager savedAchievement:(NSDictionary *)achievementInformation __deprecated;
-
-/// DEPRECATED. Use gameCenterManager: reportedScore: withError: instead.
-- (void)gameCenterManager:(GameCenterManager *)manager reportedScore:(NSDictionary *)scoreInformation __deprecated;
-
-/// DEPRECATED. Use gameCenterManager: reportedAchievement: withError: instead.
-- (void)gameCenterManager:(GameCenterManager *)manager reportedAchievement:(NSDictionary *)achievementInformation __deprecated;
-
-/// DEPRECATED. UNAVAILABLE. Use the completion handler on resetAchievementsWithCompletion:
-- (void)gameCenterManager:(GameCenterManager *)manager resetAchievements:(NSError *)error __deprecated __unavailable;
+///// DEPRECATED. Use gameCenterManager: didSaveScore: instead.
+//- (void)gameCenterManager:(GameCenterManager *)manager savedScore:(GKScore *)score __deprecated;
+//
+///// DEPRECATED. Use gameCenterManager: didSaveAchievement: instead.
+//- (void)gameCenterManager:(GameCenterManager *)manager savedAchievement:(NSDictionary *)achievementInformation __deprecated;
+//
+///// DEPRECATED. Use gameCenterManager: reportedScore: withError: instead.
+//- (void)gameCenterManager:(GameCenterManager *)manager reportedScore:(NSDictionary *)scoreInformation __deprecated;
+//
+///// DEPRECATED. Use gameCenterManager: reportedAchievement: withError: instead.
+//- (void)gameCenterManager:(GameCenterManager *)manager reportedAchievement:(NSDictionary *)achievementInformation __deprecated;
+//
+///// DEPRECATED. UNAVAILABLE. Use the completion handler on resetAchievementsWithCompletion:
+//- (void)gameCenterManager:(GameCenterManager *)manager resetAchievements:(NSError *)error __deprecated __unavailable;
 
 @end
 

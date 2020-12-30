@@ -96,19 +96,19 @@
 - (void)gameCenterManager:(GCMMultiplayer *)manager matchEnded:(GKMatch *)match;
 
 /// Sent to the delegate when data is recieved on the current device (sent from another player in the match)
-- (void)gameCenterManager:(GCMMultiplayer *)manager match:(GKMatch *)match didReceiveData:(NSData *)data fromPlayer:(NSString *)playerID;
+- (void)gameCenterManager:(GCMMultiplayer *)manager match:(GKMatch *)match didReceiveData:(NSData *)data fromPlayer:(GKPlayer *)player;
 
 
 @optional
 
 /// Sent to the delegate when all players are connected. Passes an array of players in the match to the delegate.
-- (void)gameCenterManager:(GCMMultiplayer *)manager match:(GKMatch *)match didConnectAllPlayers:(NSArray *)gkPlayerArray;
+- (void)gameCenterManager:(GCMMultiplayer *)manager match:(GKMatch *)match didConnectAllPlayers:(NSArray<GKPlayer*> *)gkPlayerArray;
 
 /// Sent to the delegate when a player is disconnected. Passes the disconnected player to the delegate.
 - (void)gameCenterManager:(GCMMultiplayer *)manager match:(GKMatch *)match playerDidDisconnect:(GKPlayer *)player;
 
 /// Sent to the delegate when a player recieves a match invitation. Use this opportunity to begin a match or setup the match request.
-- (void)gameCenterManager:(GCMMultiplayer *)manager match:(GKMatch *)match didRecieveMatchInvitationForPlayer:(GKPlayer *)invitedPlayer playersToInvite:(NSArray *)players;
+- (void)gameCenterManager:(GCMMultiplayer *)manager match:(GKMatch *)match didRecieveMatchInvitationForPlayer:(GKPlayer *)invitedPlayer playersToInvite:(NSArray<GKPlayer*> *)players;
 
 /// Sent to the delegate when a player accepts a match invitation. Use this opportunity to handle your match.
 - (void)gameCenterManager:(GCMMultiplayer *)manager match:(GKMatch *)match didAcceptMatchInvitation:(GKInvite *)invite player:(GKPlayer *)player;
