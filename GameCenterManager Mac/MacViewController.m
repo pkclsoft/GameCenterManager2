@@ -31,7 +31,7 @@
         [[GameCenterManager sharedManager] setDelegate:self];
         
         // Setup Game Center Manager
-        BOOL available = [[GameCenterManager sharedManager] checkGameCenterAvailability:YES];
+        BOOL available = [[GameCenterManager sharedManager] checkGameCenterAvailability];
         if (available) self.gameCenterStatus.stringValue = @"GAME CENTER AVAILABLE";
         else self.gameCenterStatus.stringValue = @"GAME CENTER UNAVAILABLE";
         
@@ -87,7 +87,7 @@
             [[GameCenterManager sharedManager] localPlayerPhoto:^(NSImage *playerPhoto) {
                 self.playerProfilePicture.image = playerPhoto;
                 self.playerProfilePicture.layer.cornerRadius = self.playerProfilePicture.bounds.size.width/2;
-                [self.playerProfilePicture setNeedsDisplay];
+                self.playerProfilePicture.needsDisplay = YES;
             }];
         } else {
             self.actionStatus.stringValue = [NSString stringWithFormat:@"Underage player, %@, signed in.", player.displayName];

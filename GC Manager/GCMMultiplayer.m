@@ -12,7 +12,11 @@
 @interface GCMMultiplayer ()
 @property (nonatomic, strong, readwrite) GKMatch *multiplayerMatch;
 @property (nonatomic, assign, readwrite) BOOL multiplayerMatchStarted;
+#if TARGET_OS_OSX
+@property (nonatomic, strong, readwrite) NSViewController *matchPresentingController;
+#else
 @property (nonatomic, strong, readwrite) UIViewController *matchPresentingController;
+#endif
 @end
 
 @implementation GCMMultiplayer
@@ -41,7 +45,12 @@
 
 #pragma mark - Match Handling
 
-- (void)findMatchWithMinimumPlayers:(int)minPlayers maximumPlayers:(int)maxPlayers onViewController:(UIViewController *)viewController {
+#if TARGET_OS_OSX
+- (void)findMatchWithMinimumPlayers:(int)minPlayers maximumPlayers:(int)maxPlayers onViewController:(NSViewController *)viewController
+#else
+- (void)findMatchWithMinimumPlayers:(int)minPlayers maximumPlayers:(int)maxPlayers onViewController:(UIViewController *)viewController
+#endif
+{
     if (![[GameCenterManager sharedManager] isGameCenterAvailable]) {
         NSError *error = [NSError errorWithDomain:[NSString stringWithFormat:@"GameCenter Unavailable"] code:GCMErrorNotAvailable userInfo:nil];
         if ([[[GameCenterManager sharedManager] delegate] respondsToSelector:@selector(gameCenterManager:error:)])
@@ -70,7 +79,12 @@
 #endif
 }
 
-- (void)findMatchWithGKMatchRequest:(GKMatchRequest *)matchRequest onViewController:(UIViewController *)viewController {
+#if TARGET_OS_OSX
+- (void)findMatchWithGKMatchRequest:(GKMatchRequest *)matchRequest onViewController:(NSViewController *)viewController
+#else
+- (void)findMatchWithGKMatchRequest:(GKMatchRequest *)matchRequest onViewController:(UIViewController *)viewController
+#endif
+{
     if (![[GameCenterManager sharedManager] isGameCenterAvailable]) {
         NSError *error = [NSError errorWithDomain:[NSString stringWithFormat:@"GameCenter Unavailable"] code:GCMErrorNotAvailable userInfo:nil];
         if ([[[GameCenterManager sharedManager] delegate] respondsToSelector:@selector(gameCenterManager:error:)])
@@ -339,7 +353,7 @@
                     NSMutableArray<NSString*> *playerIDs = [NSMutableArray arrayWithCapacity:match.players.count];
                     
                     [match.players enumerateObjectsUsingBlock:^(GKPlayer * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
-                        [playerIDs addObject:obj.playerID];
+                        [playerIDs addObject:obj.gamePlayerID];
                     }];
                     
                     [GKPlayer loadPlayersForIdentifiers:playerIDs withCompletionHandler:^(NSArray<GKPlayer*> *players, NSError *error) {
@@ -354,7 +368,7 @@
             NSLog(@"Player disconnected");
             
             if ([self.multiplayerDelegate respondsToSelector:@selector(gameCenterManager:match:playerDidDisconnect:)]) {
-                [GKPlayer loadPlayersForIdentifiers:@[player.playerID] withCompletionHandler:^(NSArray *players, NSError *error) {
+                [GKPlayer loadPlayersForIdentifiers:@[player.gamePlayerID] withCompletionHandler:^(NSArray *players, NSError *error) {
                     [self.multiplayerDelegate gameCenterManager:self match:match playerDidDisconnect:[players firstObject]];
                 }];
             }

@@ -905,7 +905,12 @@
 //------------------------------------------------------------------------------------------------------------//
 #pragma mark - Presenting GameKit Controllers
 
-- (void)presentAchievementsOnViewController:(UIViewController *)viewController {
+#if TARGET_OS_OSX
+- (void)presentAchievementsOnViewController:(NSViewController *)viewController
+#else
+- (void)presentAchievementsOnViewController:(UIViewController *)viewController
+#endif
+{
     GKGameCenterViewController *achievementsViewController = [[GKGameCenterViewController alloc] init];
     #if TARGET_OS_IOS || (TARGET_OS_IPHONE && !TARGET_OS_TV)
     achievementsViewController.viewState = GKGameCenterViewControllerStateAchievements;
@@ -924,7 +929,12 @@
 #endif
 }
 
-- (void)presentLeaderboardsOnViewController:(UIViewController *)viewController withLeaderboard:(NSString *)leaderboard {
+#if TARGET_OS_OSX
+- (void)presentLeaderboardsOnViewController:(NSViewController *)viewController withLeaderboard:(NSString *)leaderboard
+#else
+- (void)presentLeaderboardsOnViewController:(UIViewController *)viewController withLeaderboard:(NSString *)leaderboard
+#endif
+{
     GKGameCenterViewController *leaderboardViewController = [[GKGameCenterViewController alloc] init];
     #if TARGET_OS_IOS || (TARGET_OS_IPHONE && !TARGET_OS_TV)
     leaderboardViewController.viewState = GKGameCenterViewControllerStateLeaderboards;
@@ -960,7 +970,12 @@
 #endif
 }
 
-- (void)presentChallengesOnViewController:(UIViewController *)viewController {
+#if TARGET_OS_OSX
+- (void)presentChallengesOnViewController:(NSViewController *)viewController
+#else
+- (void)presentChallengesOnViewController:(UIViewController *)viewController
+#endif
+{
     GKGameCenterViewController *challengeViewController = [[GKGameCenterViewController alloc] init];
     #if TARGET_OS_IOS || (TARGET_OS_IPHONE && !TARGET_OS_TV)
     challengeViewController.viewState = GKGameCenterViewControllerStateChallenges;
@@ -1050,7 +1065,7 @@
 - (NSString *)localPlayerID {
     if ([self isGameCenterAvailable]) {
         if ([GKLocalPlayer localPlayer].authenticated) {
-            return [GKLocalPlayer localPlayer].playerID;
+            return [GKLocalPlayer localPlayer].gamePlayerID;
         }
     }
     return @"unknownPlayer";

@@ -34,7 +34,7 @@
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:YES];
 
-    BOOL available = [[GameCenterManager sharedManager] checkGameCenterAvailability:YES];
+    BOOL available = [[GameCenterManager sharedManager] checkGameCenterAvailability];
     if (available) {
         [self.navigationController.navigationBar setValue:@"GameCenter Available" forKeyPath:@"prompt"];
     } else {
@@ -104,8 +104,24 @@
 }
 
 - (IBAction)resetAchievements {
-    UIActionSheet *actionSheet = [[UIActionSheet alloc] initWithTitle:@"Really Reset ALL Achievements?" delegate:self cancelButtonTitle:@"Cancel" destructiveButtonTitle:@"Reset Achievements" otherButtonTitles:nil];
-    [actionSheet showInView:self.view];
+    UIAlertController *alertController = [UIAlertController alertControllerWithTitle:@"Really Reset ALL Achievements?" message:nil preferredStyle:UIAlertControllerStyleActionSheet];
+    
+    UIAlertAction* defaultAction = [UIAlertAction actionWithTitle:@"Reset Achievements" style:UIAlertActionStyleDestructive
+       handler:^(UIAlertAction * _Nonnull action) {
+        [[GameCenterManager sharedManager] resetAchievementsWithCompletion:^(NSError *error) {
+            if (error) {
+                NSLog(@"Error Resetting Achievements: %@", error);
+            }
+        }];
+   }];
+    
+    UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleCancel handler:^(UIAlertAction * _Nonnull action) {
+        
+    }];
+     
+    [alertController addAction:defaultAction];
+    [alertController addAction:cancelAction];
+    [self presentViewController:alertController animated:YES completion:nil];
 }
 
 //------------------------------------------------------------------------------------------------------------//
@@ -208,20 +224,6 @@
 - (void)gameCenterManager:(GameCenterManager *)manager didSaveAchievement:(GKAchievement *)achievement {
     NSLog(@"Saved GCM Achievement: %@", achievement);
     actionBarLabel.title = [NSString stringWithFormat:@"Achievement saved for upload to GameCenter."];
-}
-
-//------------------------------------------------------------------------------------------------------------//
-//------- UIActionSheet Delegate -----------------------------------------------------------------------------//
-//------------------------------------------------------------------------------------------------------------//
-#pragma mark - UIActionSheet Delegate
-
-- (void)actionSheet:(UIActionSheet *)actionSheet clickedButtonAtIndex:(NSInteger)buttonIndex {
-    NSString *buttonTitle = [actionSheet buttonTitleAtIndex:buttonIndex];
-    if ([buttonTitle isEqualToString:@"Reset Achievements"]) {
-       [[GameCenterManager sharedManager] resetAchievementsWithCompletion:^(NSError *error) {
-           if (error) NSLog(@"Error Resetting Achievements: %@", error);
-       }];
-    }
 }
 
 @end

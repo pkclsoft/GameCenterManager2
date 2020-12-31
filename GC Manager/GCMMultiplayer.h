@@ -24,11 +24,19 @@
 /// Begin listening and responding to Game Center match requests / invites. This should be one of the first calls made to the GCMMultiplayer object.
 - (void)beginListeningForMatches;
 
+#if TARGET_OS_OSX
+/// Finds and sets up a multiplayer match using the specified parameters and the default MatchmakerViewController
+- (void)findMatchWithMinimumPlayers:(int)minPlayers maximumPlayers:(int)maxPlayers onViewController:(NSViewController *)viewController;
+
+/// Finds and sets up a multiplayer match using a custom GKMatchRequest object - this allows for ultimate match flexibility (eg. player groups, invited players, player attributes, etc.)
+- (void)findMatchWithGKMatchRequest:(GKMatchRequest *)matchRequest onViewController:(NSViewController *)viewController;
+#else
 /// Finds and sets up a multiplayer match using the specified parameters and the default MatchmakerViewController
 - (void)findMatchWithMinimumPlayers:(int)minPlayers maximumPlayers:(int)maxPlayers onViewController:(UIViewController *)viewController;
 
 /// Finds and sets up a multiplayer match using a custom GKMatchRequest object - this allows for ultimate match flexibility (eg. player groups, invited players, player attributes, etc.)
 - (void)findMatchWithGKMatchRequest:(GKMatchRequest *)matchRequest onViewController:(UIViewController *)viewController;
+#endif
 
 /** Sends data to \b all players in the current multiplayer match using the specified parameters
  

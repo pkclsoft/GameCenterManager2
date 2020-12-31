@@ -24,7 +24,7 @@
 //#define SUPPORT_ENCRYPTION (1)
 
 // If you want your user defaults to be preserved in iCloud uncomment the following line
-#define USE_ICLOUD_USER_DEFAULTS (1)
+//#define USE_ICLOUD_USER_DEFAULTS (1)
 
 #if USE_ICLOUD_USER_DEFAULTS
 #define USERDEFAULTS SDCloudUserDefaults
@@ -141,7 +141,16 @@
 - (void)getChallengesWithCompletion:(void (^)(NSArray *challenges, NSError *error))handler __attribute__((nonnull));
 
 
-//#if TARGET_OS_IPHONE
+#if TARGET_OS_OSX
+/// Presents the GameCenter Achievements ViewController over the specified ViewController. Dismissal and delegation is handled by GameCenterManager.
+- (void)presentAchievementsOnViewController:(NSViewController *)viewController;
+
+/// Presents the GameCenter Leaderboards ViewController with Leaderboard Identifier over the specified ViewController. Dismissal and delegation is handled by GameCenterManager.
+- (void)presentLeaderboardsOnViewController:(NSViewController *)viewController withLeaderboard:(NSString *)leaderboard;
+
+/// Presents the GameCenter Challenges ViewController over the specified ViewController. Dismissal and delegation is handled by GameCenterManager.
+- (void)presentChallengesOnViewController:(NSViewController *)viewController;
+#else
 /// Presents the GameCenter Achievements ViewController over the specified ViewController. Dismissal and delegation is handled by GameCenterManager.
 - (void)presentAchievementsOnViewController:(UIViewController *)viewController;
 
@@ -150,8 +159,7 @@
 
 /// Presents the GameCenter Challenges ViewController over the specified ViewController. Dismissal and delegation is handled by GameCenterManager.
 - (void)presentChallengesOnViewController:(UIViewController *)viewController;
-//#endif
-
+#endif
 
 #if TARGET_OS_IPHONE
 /// Resets all of the local player's achievements and progress for the current game
@@ -159,9 +167,6 @@
 #else
 /// Resets all of the local player's achievements and progress for the current game
 - (void)resetAchievementsWithCompletion:(void (^)(NSError *error))handler __attribute__((nonnull));
-
-/// DEPRECATED. Use resetAchievementsWithCompletion: instead.
-- (void)resetAchievements __deprecated __unavailable;
 #endif
 
 

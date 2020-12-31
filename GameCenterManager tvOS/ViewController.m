@@ -50,7 +50,7 @@
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:YES];
 
-    BOOL available = [[GameCenterManager sharedManager] checkGameCenterAvailability:YES];
+    BOOL available = [[GameCenterManager sharedManager] checkGameCenterAvailability];
     if (available) {
         [self.navigationController.navigationBar setValue:@"GameCenter Available" forKeyPath:@"prompt"];
     } else {
