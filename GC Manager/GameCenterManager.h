@@ -235,25 +235,6 @@
 /// Sent to the delegate when the Game Center View Controller has been dismissed
 - (void)gameCenterManager:(GameCenterManager *)manager gameCenterViewControllerDidFinish:(BOOL)finished;
 
-//----------------------------------//
-//-- Deprecated Delegate Methods ---//
-//----------------------------------//
-
-///// DEPRECATED. Use gameCenterManager: didSaveScore: instead.
-//- (void)gameCenterManager:(GameCenterManager *)manager savedScore:(GKScore *)score __deprecated;
-//
-///// DEPRECATED. Use gameCenterManager: didSaveAchievement: instead.
-//- (void)gameCenterManager:(GameCenterManager *)manager savedAchievement:(NSDictionary *)achievementInformation __deprecated;
-//
-///// DEPRECATED. Use gameCenterManager: reportedScore: withError: instead.
-//- (void)gameCenterManager:(GameCenterManager *)manager reportedScore:(NSDictionary *)scoreInformation __deprecated;
-//
-///// DEPRECATED. Use gameCenterManager: reportedAchievement: withError: instead.
-//- (void)gameCenterManager:(GameCenterManager *)manager reportedAchievement:(NSDictionary *)achievementInformation __deprecated;
-//
-///// DEPRECATED. UNAVAILABLE. Use the completion handler on resetAchievementsWithCompletion:
-//- (void)gameCenterManager:(GameCenterManager *)manager resetAchievements:(NSError *)error __deprecated __unavailable;
-
 @end
 
 

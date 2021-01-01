@@ -86,11 +86,7 @@ These methods are not interchangable. If you decide to setup with encryption the
 ###Check Game Center Support
 GameCenter Manager automatically checks if Game Center is available before performing any Game Center-related operations. You can also check for Game Center availability by using the following method, which returns a `BOOL` value (YES / NO).
 
-    // Will not call delegate if status has not changed from the previous time it was called
-    BOOL isAvailable = [[GameCenterManager sharedManager] checkGameCenterAvailability:NO];
-
-    // Will always call delegate even if status has not changed from the previous time it was called
-    BOOL isAvailable = [[GameCenterManager sharedManager] checkGameCenterAvailability:YES];
+    BOOL isAvailable = [[GameCenterManager sharedManager] checkGameCenterAvailability];
 
 This method will perform the following checks in the following order:
  1. Current OS version new enough to run Game Center. iOS 4.1 or macOS 10.8. Some Game Center methods require newer OS versions which will be checked (ex. challenges and some multiplayer features).
@@ -201,9 +197,9 @@ To get any other data about a player use this method:
     GKLocalPlayer *player = [[GameCenterManager sharedManager] localPlayerData]; 
 
 ## Delegates
-GameCenter Manager delegate methods notify you of the status of Game Center and various other tasks. There is only one required delegate method for iOS, none for macOS.
+GameCenter Manager delegate methods notify you of the status of Game Center and various other tasks. There is only one required delegate method.
 
-###Authenticate User (Required, iOS only)
+###Authenticate User (Required)
 If the user is not logged into Game Center, you'll need to present the Game Center login view controller. This method is required because the user must be logged in for Game Center to work. If the user does not login, an error will be returned.  
 
      - (void)gameCenterManager:(GameCenterManager *)manager authenticateUser:(UIViewController *)gameCenterLoginController
