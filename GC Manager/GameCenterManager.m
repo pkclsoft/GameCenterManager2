@@ -249,6 +249,10 @@
 //------------------------------------------------------------------------------------------------------------//
 #pragma mark - GameCenter Syncing
 
+- (NSString*) savedScoresKey {
+    return [NSString stringWithFormat:@"%@_savedScores", [self localPlayerID]];
+}
+
 - (void) storePlayerData:(id)obj withKey:(NSString*)key {
     NSData *saveData;
 #if SUPPORT_ENCRYPTION
@@ -539,7 +543,7 @@
     if ([self isInternetAvailable] == NO) return;
     
     GKScore *gkScore = nil;
-    NSMutableArray *savedScores = [self getPlayerDataOfClass:[NSMutableArray class] withKey:@"SavedScores"];
+    NSMutableArray *savedScores = [self getPlayerDataOfClass:[NSMutableArray class] withKey:[self savedScoresKey]];
     
     if (savedScores != nil) {
         if (savedScores.count > 0) {
@@ -547,7 +551,7 @@
             
             [savedScores removeObjectAtIndex:0];
 
-            [self storePlayerData:savedScores withKey:@"SavedScores"];
+            [self storePlayerData:savedScores withKey:[self savedScoresKey]];
         }
     }
     
@@ -612,7 +616,11 @@
     
     NSNumber *savedHighScore = [playerDict objectForKey:identifier];
     if (savedHighScore == nil) {
-        savedHighScore = [NSNumber numberWithLongLong:0];
+        if (order == GameCenterSortOrderHighToLow) {
+            savedHighScore = [NSNumber numberWithLongLong:0];
+        } else {
+            savedHighScore = [NSNumber numberWithLongLong:LONG_LONG_MAX];
+        }
     }
     
     long long savedHighScoreValue = [savedHighScore longLongValue];
@@ -725,7 +733,7 @@
         return;
     }
     NSData *scoreData = [NSKeyedArchiver archivedDataWithRootObject:score requiringSecureCoding:NO error:nil];
-    NSMutableArray *savedScores = [self getPlayerDataOfClass:[NSMutableArray class] withKey:@"SavedScores"];
+    NSMutableArray *savedScores = [self getPlayerDataOfClass:[NSMutableArray class] withKey:[self savedScoresKey]];
     
     if (savedScores != nil) {
         [savedScores addObject:scoreData];
@@ -733,7 +741,7 @@
         savedScores = [NSMutableArray arrayWithObject:scoreData];
     }
 
-    [self storePlayerData:savedScores withKey:@"SavedScores"];
+    [self storePlayerData:savedScores withKey:[self savedScoresKey]];
     
     dispatch_async(dispatch_get_main_queue(), ^{
         if ([[self delegate] respondsToSelector:@selector(gameCenterManager:didSaveScore:)]) {

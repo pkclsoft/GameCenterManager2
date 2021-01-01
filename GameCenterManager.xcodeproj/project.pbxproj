@@ -60,11 +60,22 @@
 		A6BACC651A6AC45E00EAABCF /* Storyboard.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = A6BACC641A6AC45E00EAABCF /* Storyboard.storyboard */; };
 		A6BACC681A6ACB5100EAABCF /* MacViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = A6BACC671A6ACB5100EAABCF /* MacViewController.m */; };
 		A6D07E021C03E0ED00EDC417 /* GCMMultiplayer.m in Sources */ = {isa = PBXBuildFile; fileRef = A6D07E011C03E0ED00EDC417 /* GCMMultiplayer.m */; };
+		D02664A8259F45BA008C9E88 /* GameCenterManager_MacTests.m in Sources */ = {isa = PBXBuildFile; fileRef = D02664A7259F45BA008C9E88 /* GameCenterManager_MacTests.m */; };
 		D04E4D9A259DF2FA002AA6CC /* SDCloudUserDefaults.m in Sources */ = {isa = PBXBuildFile; fileRef = D04E4D99259DF2FA002AA6CC /* SDCloudUserDefaults.m */; };
 		D04E4D9B259DF2FA002AA6CC /* SDCloudUserDefaults.m in Sources */ = {isa = PBXBuildFile; fileRef = D04E4D99259DF2FA002AA6CC /* SDCloudUserDefaults.m */; };
 		D04E4D9C259DF2FA002AA6CC /* SDCloudUserDefaults.m in Sources */ = {isa = PBXBuildFile; fileRef = D04E4D99259DF2FA002AA6CC /* SDCloudUserDefaults.m */; };
 		D04E4DB3259DFB57002AA6CC /* Launch Screen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = D04E4DB2259DFB57002AA6CC /* Launch Screen.storyboard */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		D02664AA259F45BA008C9E88 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 659699CD1515718700724EBE /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 994E293F17838BF300EAACD2;
+			remoteInfo = "GameCenterManager Mac";
+		};
+/* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
 		659699D61515718800724EBE /* GameCenterManager.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = GameCenterManager.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -130,6 +141,11 @@
 		A6D07E001C03E0ED00EDC417 /* GCMMultiplayer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GCMMultiplayer.h; sourceTree = "<group>"; };
 		A6D07E011C03E0ED00EDC417 /* GCMMultiplayer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GCMMultiplayer.m; sourceTree = "<group>"; };
 		A6D07E031C03E34700EDC417 /* GCMConstants.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GCMConstants.h; sourceTree = "<group>"; };
+		D0266483259F439E008C9E88 /* XCTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XCTest.framework; path = Platforms/iPhoneOS.platform/Developer/Library/Frameworks/XCTest.framework; sourceTree = DEVELOPER_DIR; };
+		D0266497259F44CF008C9E88 /* XCTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XCTest.framework; path = Platforms/MacOSX.platform/Developer/Library/Frameworks/XCTest.framework; sourceTree = DEVELOPER_DIR; };
+		D02664A5259F45BA008C9E88 /* GameCenterManager MacTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "GameCenterManager MacTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+		D02664A7259F45BA008C9E88 /* GameCenterManager_MacTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = GameCenterManager_MacTests.m; sourceTree = "<group>"; };
+		D02664A9259F45BA008C9E88 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		D04E4D98259DF2FA002AA6CC /* SDCloudUserDefaults.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDCloudUserDefaults.h; sourceTree = "<group>"; };
 		D04E4D99259DF2FA002AA6CC /* SDCloudUserDefaults.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SDCloudUserDefaults.m; sourceTree = "<group>"; };
 		D04E4DB2259DFB57002AA6CC /* Launch Screen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = "Launch Screen.storyboard"; sourceTree = "<group>"; };
@@ -175,6 +191,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		D02664A2259F45BA008C9E88 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -190,6 +213,7 @@
 				659699E01515718800724EBE /* GameCenterManager iOS */,
 				994E294717838BF300EAACD2 /* GameCenterManager Mac */,
 				99108E3C1C1E7A3200BDD25F /* GameCenterManager tvOS */,
+				D02664A6259F45BA008C9E88 /* GameCenterManager MacTests */,
 				659699D91515718800724EBE /* Frameworks */,
 				659699D71515718800724EBE /* Products */,
 			);
@@ -201,6 +225,7 @@
 				659699D61515718800724EBE /* GameCenterManager.app */,
 				994E294017838BF300EAACD2 /* GameCenterManager Mac.app */,
 				99108E3B1C1E7A3200BDD25F /* GameCenterManager tvOS.app */,
+				D02664A5259F45BA008C9E88 /* GameCenterManager MacTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -208,6 +233,8 @@
 		659699D91515718800724EBE /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				D0266483259F439E008C9E88 /* XCTest.framework */,
+				D0266497259F44CF008C9E88 /* XCTest.framework */,
 				99ED4CE41C1E881000B39320 /* tvOS */,
 				994E295F17838C2D00EAACD2 /* OS X */,
 				994E295E17838C1900EAACD2 /* iOS */,
@@ -378,6 +405,15 @@
 			name = tvOS;
 			sourceTree = "<group>";
 		};
+		D02664A6259F45BA008C9E88 /* GameCenterManager MacTests */ = {
+			isa = PBXGroup;
+			children = (
+				D02664A7259F45BA008C9E88 /* GameCenterManager_MacTests.m */,
+				D02664A9259F45BA008C9E88 /* Info.plist */,
+			);
+			path = "GameCenterManager MacTests";
+			sourceTree = "<group>";
+		};
 		D04E4D97259DF2E1002AA6CC /* UserDefaults */ = {
 			isa = PBXGroup;
 			children = (
@@ -441,6 +477,24 @@
 			productReference = 994E294017838BF300EAACD2 /* GameCenterManager Mac.app */;
 			productType = "com.apple.product-type.application";
 		};
+		D02664A4259F45BA008C9E88 /* GameCenterManager MacTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = D02664AC259F45BA008C9E88 /* Build configuration list for PBXNativeTarget "GameCenterManager MacTests" */;
+			buildPhases = (
+				D02664A1259F45BA008C9E88 /* Sources */,
+				D02664A2259F45BA008C9E88 /* Frameworks */,
+				D02664A3259F45BA008C9E88 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				D02664AB259F45BA008C9E88 /* PBXTargetDependency */,
+			);
+			name = "GameCenterManager MacTests";
+			productName = "GameCenterManager MacTests";
+			productReference = D02664A5259F45BA008C9E88 /* GameCenterManager MacTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -475,6 +529,11 @@
 							};
 						};
 					};
+					D02664A4259F45BA008C9E88 = {
+						CreatedOnToolsVersion = 12.3;
+						ProvisioningStyle = Manual;
+						TestTargetID = 994E293F17838BF300EAACD2;
+					};
 				};
 			};
 			buildConfigurationList = 659699D01515718700724EBE /* Build configuration list for PBXProject "GameCenterManager" */;
@@ -493,6 +552,7 @@
 				659699D51515718800724EBE /* GameCenterManager */,
 				994E293F17838BF300EAACD2 /* GameCenterManager Mac */,
 				99108E3A1C1E7A3200BDD25F /* GameCenterManager tvOS */,
+				D02664A4259F45BA008C9E88 /* GameCenterManager MacTests */,
 			);
 		};
 /* End PBXProject section */
@@ -532,6 +592,13 @@
 				9940C4421C2007A6008F3618 /* Images.xcassets in Resources */,
 				994E295217838BF300EAACD2 /* Credits.rtf in Resources */,
 				A6BACC651A6AC45E00EAABCF /* Storyboard.storyboard in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D02664A3259F45BA008C9E88 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -582,7 +649,23 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		D02664A1259F45BA008C9E88 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D02664A8259F45BA008C9E88 /* GameCenterManager_MacTests.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		D02664AB259F45BA008C9E88 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 994E293F17838BF300EAACD2 /* GameCenterManager Mac */;
+			targetProxy = D02664AA259F45BA008C9E88 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
 		659699E31515718800724EBE /* InfoPlist.strings */ = {
@@ -717,6 +800,7 @@
 				GCC_PREFIX_HEADER = "GameCenterManager/GameCenterManager-Prefix.pch";
 				GCC_THUMB_SUPPORT = NO;
 				INFOPLIST_FILE = "GameCenterManager/GameCenterManager-Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				ONLY_ACTIVE_ARCH = NO;
 				PRODUCT_BUNDLE_IDENTIFIER = com.pkclsoft.GameCenterManager;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -739,6 +823,7 @@
 				GCC_PREFIX_HEADER = "GameCenterManager/GameCenterManager-Prefix.pch";
 				GCC_THUMB_SUPPORT = NO;
 				INFOPLIST_FILE = "GameCenterManager/GameCenterManager-Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.pkclsoft.GameCenterManager;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -833,6 +918,7 @@
 				GCC_PREFIX_HEADER = "GameCenterManager Mac/GameCenterManager Mac-Prefix.pch";
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				INFOPLIST_FILE = "GameCenterManager Mac/GameCenterManager Mac-Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 10.15;
 				ONLY_ACTIVE_ARCH = NO;
 				PRODUCT_BUNDLE_IDENTIFIER = com.pkclsoft.gamecentermanagermac;
@@ -867,6 +953,7 @@
 				GCC_PREFIX_HEADER = "GameCenterManager Mac/GameCenterManager Mac-Prefix.pch";
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				INFOPLIST_FILE = "GameCenterManager Mac/GameCenterManager Mac-Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 10.15;
 				PRODUCT_BUNDLE_IDENTIFIER = com.pkclsoft.gamecentermanagermac;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -874,6 +961,108 @@
 				SDKROOT = macosx;
 				TVOS_DEPLOYMENT_TARGET = 13.0;
 				WRAPPER_EXTENSION = app;
+			};
+			name = Release;
+		};
+		D02664AD259F45BA008C9E88 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = NO;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = NO;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_STYLE = Manual;
+				COMBINE_HIDPI_IMAGES = YES;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = "";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(SYSTEM_APPS_DIR)/Xcode.app/Contents/Developer/Library/Frameworks\"",
+				);
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				INFOPLIST_FILE = "GameCenterManager MacTests/Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.pkclsoft.GameCenterManager-MacTests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SDKROOT = macosx;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/GameCenterManager Mac.app/Contents/MacOS/GameCenterManager Mac";
+			};
+			name = Debug;
+		};
+		D02664AE259F45BA008C9E88 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = NO;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = NO;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_STYLE = Manual;
+				COMBINE_HIDPI_IMAGES = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = "";
+				ENABLE_NS_ASSERTIONS = NO;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(SYSTEM_APPS_DIR)/Xcode.app/Contents/Developer/Library/Frameworks\"",
+				);
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				INFOPLIST_FILE = "GameCenterManager MacTests/Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.pkclsoft.GameCenterManager-MacTests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SDKROOT = macosx;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/GameCenterManager Mac.app/Contents/MacOS/GameCenterManager Mac";
 			};
 			name = Release;
 		};
@@ -912,6 +1101,15 @@
 			buildConfigurations = (
 				994E295917838BF300EAACD2 /* Debug */,
 				994E295A17838BF300EAACD2 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		D02664AC259F45BA008C9E88 /* Build configuration list for PBXNativeTarget "GameCenterManager MacTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D02664AD259F45BA008C9E88 /* Debug */,
+				D02664AE259F45BA008C9E88 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

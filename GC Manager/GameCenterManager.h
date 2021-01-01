@@ -32,19 +32,6 @@
 #define USERDEFAULTS [NSUserDefaults standardUserDefaults]
 #endif
 
-#if TARGET_OS_IOS || (TARGET_OS_IPHONE && !TARGET_OS_TV)
-    #define kApplicationAppSupportDirectory [NSHomeDirectory() stringByAppendingPathComponent:@"Library"]
-    #define kGameCenterManagerDataFile @"GameCenterManager.plist"
-    #define kGameCenterManagerDataPath [kApplicationAppSupportDirectory stringByAppendingPathComponent:kGameCenterManagerDataFile]
-#elif TARGET_OS_TV
-    // tvOS uses NSUserDefaults
-#else
-    #define kApplicationAppSupportDirectory [[NSSearchPathForDirectoriesInDomains(NSApplicationSupportDirectory, NSUserDomainMask, YES) lastObject] stringByAppendingPathComponent:[[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleIdentifier"]]
-    #define kGameCenterManagerDataFile @"GameCenterManager.plist"
-    #define kGameCenterManagerDataPath [kApplicationAppSupportDirectory stringByAppendingPathComponent:kGameCenterManagerDataFile]
-#endif
-
-
 #import <Foundation/Foundation.h>
 #import <GameKit/GameKit.h>
 
@@ -178,6 +165,9 @@
 
 /// Returns currently authenticated local player and all associated data. If no player is authenticated, `nil` is returned.
 - (GKLocalPlayer *)localPlayerData;
+
+/// Returns a string identifying where cached scores are stored for the current player.  For internal use or testing only.
+- (NSString*) savedScoresKey;
 
 #if TARGET_OS_IPHONE
 /// Fetches a UIImage with the local player's profile picture at full resolution. The completion handler passes a UIImage object when the image is downloaded from the GameCenter Servers

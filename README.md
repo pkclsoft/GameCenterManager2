@@ -7,6 +7,7 @@ This fork makes the following primary changes from the danoli3 fork:
 * I have removed a lot of repetitious code around the loading and saving of cached data.
 * I have added the ability to completely disable the encryption code so that use of the code does not necessitate the declaration of cryptography.  Apple, because it's the law, require devs to declare any use of cryptography within an app.  Even if we don't use it, the code's inclusion requires declaration.  Now you can exclude it entirely at compilation time.
 * I have added SDCloudUserDefaults from (https://github.com/pkclsoft/SDCloudUserDefaults.git) and the ability to direct all saved data to be saved via SDCloudUserDefaults, thus enabling the preservation of data in the cloud.
+* I have added some basic unit tests to ensure that the cached scores and achievements are being stored properly.
 
 <img width=100% src="https://raw.github.com/danoli3/GameCenterManager2/master/Images/GameBanner.png"/>
 
@@ -25,23 +26,14 @@ Learn more about the project requirements, licensing, and contributions.
 
 ## Requirements
 * Built with and for Objective-C ARC  
-* Requires a minimum of iOS 7.0 / OS X 10.9 as the deployment target  
-* Requires Xcode 5.0.1 for use in any iOS Project  
-* Uses Apple LLVM compiler 5.0  
+* Requires a minimum of iOS/tvOS 13.0 / macOS 10.14 as the deployment target  
 
 ### Requirements
-- Requires iOS 7.0+ or OS X 10.9+. The sample project is optimized for iOS 8 and OS X 10.10.
+- Requires iOS/tvOS 13.0+ or macOS 10.14+. The sample project is optimized for iOS/tvOS 13 and macOS 10.15.
 - Requires Automatic Reference Counting (ARC).
 - Optimized for ARM64 Architecture
 
-Requires Xcode 6 for use in any iOS or OS X project. Requires a minimum of iOS 7.0 or OS X 10.9 as the deployment target. 
-
-| Current Build Target 	| Earliest Supported Build Target 	| Earliest Compatible Build Target 	|
-|:--------------------:	|:-------------------------------:	|:--------------------------------:	|
-|       iOS 9.0        	|            iOS 7.0             	|             iOS 7.0              	|
-|       OS X 10.11        	|            OS X 10.9             	|             OS X 10.9             	|
-|     Xcode 7.1      	|          Xcode 6.1.1            	|           Xcode 6.0            	|
-|      LLVM 6.1        	|             LLVM 6.1            	|             LLVM 5.0             	|
+Requires Xcode 12.3 for use in any iOS or macOS project. Requires a minimum of iOS/tvOS 13.0 or macOS 10.14 as the deployment target. 
 
 > REQUIREMENTS NOTE  
 *Supported* means that the library has been tested with this version. *Compatible* means that the library should work on this OS version (i.e. it doesn't rely on any unavailable SDK features) but is no longer being tested for compatibility and may require tweaking or bug fixes to run correctly.
@@ -67,7 +59,7 @@ Setting up GameCenter Manager is very straightforward. These instructions do not
 2. Add the following classes (can be found in the *GC Manager* folder) to your Xcode project (make sure to select Copy Items in the dialog):  
      -  GameCenterManager
      -  Reachability 
-     -  NSDataAES256
+     -  NSDataAES256 (optional, only needed if you are enabling encryption)
 3. Import the `GameCenterManager.h` file
 4. You can initialize GameCenterManager and begin syncing by using the following method call:
 
@@ -101,7 +93,7 @@ GameCenter Manager automatically checks if Game Center is available before perfo
     BOOL isAvailable = [[GameCenterManager sharedManager] checkGameCenterAvailability:YES];
 
 This method will perform the following checks in the following order:
- 1. Current OS version new enough to run Game Center. iOS 4.1 or OS X 10.8. Some Game Center methods require newer OS versions which will be checked (ex. challenges and some multiplayer features).
+ 1. Current OS version new enough to run Game Center. iOS 4.1 or macOS 10.8. Some Game Center methods require newer OS versions which will be checked (ex. challenges and some multiplayer features).
  2. GameKit API availability. The `GKLocalPlayer` class must be available at a minimum.
  3. Internet Connection. The `Reachability` class is used to determine if there is an active internet connection. GameCenterManager will still work without internet, however all saved data can only be uploaded with an internet connection.
  4. Local Player. Check to make sure a local player is logged in and authenticated.  
@@ -198,9 +190,9 @@ To get the player's display name (alias on iOS lower than iOS 6.0) use this meth
 
     NSString *playerName = [[GameCenterManager sharedManager] localPlayerDisplayName];  
 
-To get the player's profile picture the following method. On iOS, the completion handler passes a `UIImage`, on OS X the completion handler passes an `NSImage`. The image passed to you is at full resolution.
+To get the player's profile picture the following method. On iOS, the completion handler passes a `UIImage`, on macOS the completion handler passes an `NSImage`. The image passed to you is at full resolution.
 
-    [self localPlayerPhoto:^(UIImage *playerPhoto) { // On OS X, the completion handler pases an NSImage instead of a UIImage
+    [self localPlayerPhoto:^(UIImage *playerPhoto) { // On macOS, the completion handler pases an NSImage instead of a UIImage
         UIImageView *imageView = [[UIImageView alloc] initWithImage:playerPhoto];
     }];    
 
@@ -209,7 +201,7 @@ To get any other data about a player use this method:
     GKLocalPlayer *player = [[GameCenterManager sharedManager] localPlayerData]; 
 
 ## Delegates
-GameCenter Manager delegate methods notify you of the status of Game Center and various other tasks. There is only one required delegate method for iOS, none for OS X.
+GameCenter Manager delegate methods notify you of the status of Game Center and various other tasks. There is only one required delegate method for iOS, none for macOS.
 
 ###Authenticate User (Required, iOS only)
 If the user is not logged into Game Center, you'll need to present the Game Center login view controller. This method is required because the user must be logged in for Game Center to work. If the user does not login, an error will be returned.  
